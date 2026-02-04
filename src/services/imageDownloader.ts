@@ -149,11 +149,22 @@ export async function downloadBatchImages(
 }
 
 export function copyDescription(product: Product, format: 'plain' | 'html'): void {
-  const description = product.longDescription || product.shortDescription;
+  // Combine both short and long descriptions
+  const parts: string[] = [];
+
+  if (product.shortDescription) {
+    parts.push(product.shortDescription);
+  }
+  if (product.longDescription) {
+    parts.push(product.longDescription);
+  }
+
+  const description = parts.join('\n\n');
 
   if (format === 'html') {
-    // Copy as HTML
-    const blob = new Blob([description], { type: 'text/html' });
+    // Copy as HTML with proper separation
+    const htmlContent = parts.join('<br><br>');
+    const blob = new Blob([htmlContent], { type: 'text/html' });
     const item = new ClipboardItem({ 'text/html': blob, 'text/plain': new Blob([stripHtml(description)], { type: 'text/plain' }) });
     navigator.clipboard.write([item]);
   } else {

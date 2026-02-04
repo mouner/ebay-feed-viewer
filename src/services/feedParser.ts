@@ -17,6 +17,7 @@ const PRODUCT_COLUMN_MAPPINGS: Record<string, keyof ProductFeedItem> = {
   'Long Description': 'longDescription',
   'longDescription': 'longDescription',
   'description': 'longDescription',
+  'Description': 'longDescription',
   'images': 'images',
   'Images': 'images',
   'image_urls': 'images',
