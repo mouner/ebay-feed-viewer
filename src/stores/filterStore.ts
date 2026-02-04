@@ -64,6 +64,7 @@ export const useFilterStore = create<FilterStoreState>()(
     {
       name: 'ebay-feed-viewer-filters',
       partialize: (state) => ({
+        stockStatus: state.stockStatus,
         priceType: state.priceType,
         sortBy: state.sortBy,
         sortOrder: state.sortOrder,
