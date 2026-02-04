@@ -26,20 +26,30 @@ async function fetchImageAsBlob(url: string): Promise<Blob | null> {
   }
 }
 
-function getImageFilename(url: string, index: number): string {
+function getImageFilename(url: string, index: number, total: number): string {
+  // Determine padding based on total images (01, 02 for <100, 001, 002 for >=100)
+  const padLength = total >= 100 ? 3 : 2;
+  const prefix = String(index + 1).padStart(padLength, '0');
+
+  // Get extension from URL
+  let extension = 'jpg';
   try {
     const urlObj = new URL(url);
     const pathParts = urlObj.pathname.split('/');
     const filename = pathParts[pathParts.length - 1];
     if (filename && filename.includes('.')) {
-      return filename;
+      const ext = filename.split('.').pop()?.toLowerCase();
+      if (ext && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+        extension = ext;
+      }
     }
   } catch {
-    // Invalid URL
+    // Try regex fallback
+    const match = url.match(/\.(jpg|jpeg|png|gif|webp)/i);
+    if (match) extension = match[1].toLowerCase();
   }
-  // Fallback filename
-  const extension = url.match(/\.(jpg|jpeg|png|gif|webp)/i)?.[1] || 'jpg';
-  return `image_${index + 1}.${extension}`;
+
+  return `${prefix}.${extension}`;
 }
 
 export async function downloadProductImages(
@@ -57,7 +67,7 @@ export async function downloadProductImages(
     if (!blob) {
       throw new Error('Failed to download image');
     }
-    const filename = getImageFilename(images[0], 0);
+    const filename = getImageFilename(images[0], 0, 1);
     saveAs(blob, `${product.sku}_${filename}`);
     return;
   }
@@ -73,7 +83,7 @@ export async function downloadProductImages(
   const total = images.length;
 
   const downloadPromises = images.map(async (url, index) => {
-    const filename = getImageFilename(url, index);
+    const filename = getImageFilename(url, index, total);
     onProgress?.({
       current: completed,
       total,
@@ -118,7 +128,7 @@ export async function downloadBatchImages(
 
     for (let i = 0; i < product.images.length; i++) {
       const url = product.images[i];
-      const filename = getImageFilename(url, i);
+      const filename = getImageFilename(url, i, product.images.length);
 
       onProgress?.({
         current: completed,
