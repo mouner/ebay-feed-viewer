@@ -12,30 +12,31 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Function to open browser when server is ready
-open_browser() {
-    # Wait for the server to start
-    sleep 3
+# Check if server is already running
+if curl -s http://localhost:5173 > /dev/null 2>&1; then
+    echo "Server already running. Opening browser..."
+    open http://localhost:5173
+    osascript -e 'tell application "Terminal" to close front window' &
+    exit 0
+fi
 
-    # Check if server is running, keep trying for 30 seconds
+# Start the development server in background
+echo "Starting eBay Feed Viewer..."
+nohup npm run dev > /dev/null 2>&1 &
+
+# Wait for server to be ready and open browser
+(
     for i in {1..30}; do
         if curl -s http://localhost:5173 > /dev/null 2>&1; then
             open http://localhost:5173
-            return 0
+            exit 0
         fi
         sleep 1
     done
-
     echo "Server didn't start in time. Please open http://localhost:5173 manually."
-}
+) &
 
-# Start browser opener in background
-open_browser &
-
-# Start the development server
-echo "Starting eBay Feed Viewer..."
-echo "The app will open in your browser automatically."
-echo "Press Ctrl+C to stop the server."
-echo ""
-
-npm run dev
+# Give it a moment then close the terminal window
+sleep 2
+osascript -e 'tell application "Terminal" to close front window' &
+exit 0
