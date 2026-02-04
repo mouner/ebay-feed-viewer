@@ -29,6 +29,8 @@ export function ProductCard({
     useProductStore();
   const [isDownloading, setIsDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [titleCopied, setTitleCopied] = useState(false);
+  const [skuCopied, setSkuCopied] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const isFavorite = favorites.has(product.sku);
@@ -62,6 +64,20 @@ export function ProductCard({
   const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(product.sku);
+  };
+
+  const handleTitleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(product.title);
+    setTitleCopied(true);
+    setTimeout(() => setTitleCopied(false), 2000);
+  };
+
+  const handleSkuCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(product.sku);
+    setSkuCopied(true);
+    setTimeout(() => setSkuCopied(false), 2000);
   };
 
   return (
@@ -142,15 +158,23 @@ export function ProductCard({
       <div className="flex-1 p-4 space-y-3">
         {/* SKU & Stock */}
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-            {product.sku}
+          <span
+            onClick={handleSkuCopy}
+            className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+            title="Click to copy SKU"
+          >
+            {skuCopied ? '✓ Copied!' : product.sku}
           </span>
           <StockBadge status={product.stockStatus} />
         </div>
 
         {/* Title */}
-        <h3 className="font-medium text-gray-900 dark:text-white line-clamp-2 text-sm leading-snug">
-          {product.title}
+        <h3
+          onClick={handleTitleCopy}
+          className="font-medium text-gray-900 dark:text-white line-clamp-2 text-sm leading-snug cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+          title="Click to copy title"
+        >
+          {titleCopied ? '✓ Copied!' : product.title}
         </h3>
 
         {/* Price */}

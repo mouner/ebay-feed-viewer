@@ -31,6 +31,8 @@ export function ProductTable({
     useProductStore();
   const [downloadingSku, setDownloadingSku] = useState<string | null>(null);
   const [copiedSku, setCopiedSku] = useState<string | null>(null);
+  const [copiedTitleSku, setCopiedTitleSku] = useState<string | null>(null);
+  const [copiedSkuSku, setCopiedSkuSku] = useState<string | null>(null);
 
   const virtualizer = useVirtualizer({
     count: products.length,
@@ -71,6 +73,20 @@ export function ProductTable({
     } catch (error) {
       console.error('Copy failed:', error);
     }
+  };
+
+  const handleTitleCopy = (product: Product, e: MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(product.title);
+    setCopiedTitleSku(product.sku);
+    setTimeout(() => setCopiedTitleSku(null), 2000);
+  };
+
+  const handleSkuCopy = (product: Product, e: MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(product.sku);
+    setCopiedSkuSku(product.sku);
+    setTimeout(() => setCopiedSkuSku(null), 2000);
   };
 
   if (products.length === 0) {
@@ -191,8 +207,12 @@ export function ProductTable({
 
                 {/* Product Title */}
                 <div className="flex-1 min-w-0 px-2">
-                  <p className="font-medium text-gray-900 dark:text-white truncate text-sm">
-                    {product.title}
+                  <p
+                    onClick={(e) => handleTitleCopy(product, e)}
+                    className="font-medium text-gray-900 dark:text-white truncate text-sm cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                    title="Click to copy title"
+                  >
+                    {copiedTitleSku === product.sku ? '✓ Copied!' : product.title}
                   </p>
                   {product.categoryOne && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -204,8 +224,12 @@ export function ProductTable({
 
                 {/* SKU */}
                 <div className="w-28 flex-shrink-0 px-2">
-                  <span className="font-mono text-xs text-gray-500 dark:text-gray-400 truncate block">
-                    {product.sku}
+                  <span
+                    onClick={(e) => handleSkuCopy(product, e)}
+                    className="font-mono text-xs text-gray-500 dark:text-gray-400 truncate block cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                    title="Click to copy SKU"
+                  >
+                    {copiedSkuSku === product.sku ? '✓ Copied!' : product.sku}
                   </span>
                 </div>
 
