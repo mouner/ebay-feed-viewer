@@ -4,12 +4,23 @@ import type { Product } from '../types';
 import { useProductStore } from '../stores/productStore';
 import { useFilterStore } from '../stores/filterStore';
 
+// Lighter fuzzy search - only SKU and title for performance
 const fuseOptions = {
-  keys: ['sku', 'title', 'shortDescription', 'longDescription'],
+  keys: ['sku', 'title'],
   threshold: 0.3,
   ignoreLocation: true,
   includeScore: true,
 };
+
+// Detect if query looks like a SKU (contains dash, numbers, or uppercase pattern)
+function looksLikeSKU(query: string): boolean {
+  const trimmed = query.trim();
+  // Contains a dash followed by alphanumeric (common SKU pattern like "83B-147V00WT")
+  if (/-[A-Z0-9]/i.test(trimmed)) return true;
+  // All uppercase with numbers (like "B31P012")
+  if (/^[A-Z0-9-]+$/i.test(trimmed) && /\d/.test(trimmed) && trimmed.length >= 5) return true;
+  return false;
+}
 
 export function useFilteredProducts(): Product[] {
   const products = useProductStore((state) => state.products);
@@ -62,11 +73,42 @@ export function useFilteredProducts(): Product[] {
       filtered = filtered.filter((p) => !p.hasVariations);
     }
 
-    // Search filter (fuzzy)
+    // Search filter
     if (filters.searchQuery.trim()) {
-      const fuse = new Fuse(filtered, fuseOptions);
-      const results = fuse.search(filters.searchQuery.trim());
-      filtered = results.map((r) => r.item);
+      const query = filters.searchQuery.trim();
+      const queryLower = query.toLowerCase();
+
+      // If it looks like a SKU, try exact/contains match first
+      if (looksLikeSKU(query)) {
+        const skuMatches = filtered.filter(p =>
+          p.sku.toLowerCase().includes(queryLower)
+        );
+        // If we found SKU matches, use those; otherwise fall back to fuzzy
+        if (skuMatches.length > 0) {
+          filtered = skuMatches;
+        } else {
+          // Fall back to fuzzy search on SKU and title only
+          const fuse = new Fuse(filtered, fuseOptions);
+          const results = fuse.search(query);
+          filtered = results.map((r) => r.item);
+        }
+      } else {
+        // Regular search: check title contains, then fuzzy
+        const titleMatches = filtered.filter(p =>
+          p.title.toLowerCase().includes(queryLower) ||
+          p.sku.toLowerCase().includes(queryLower)
+        );
+
+        if (titleMatches.length > 0 && titleMatches.length < 500) {
+          // Good number of direct matches, use those
+          filtered = titleMatches;
+        } else {
+          // Use fuzzy search for broader matching
+          const fuse = new Fuse(filtered, fuseOptions);
+          const results = fuse.search(query);
+          filtered = results.map((r) => r.item);
+        }
+      }
     }
 
     // Sorting

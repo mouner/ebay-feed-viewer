@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { Moon, Sun, Upload, LayoutGrid, Table, Download, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '../common/Button';
 import { SearchInput } from '../common/Input';
@@ -7,6 +8,23 @@ import { useFilterStore } from '../../stores/filterStore';
 import { useSettingsStore, formatTimeAgo } from '../../stores/settingsStore';
 import { useFilteredProducts } from '../../hooks/useFilteredProducts';
 import { exportProductsToCSV } from '../../services/exportService';
+
+// Debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface HeaderProps {
   onUploadClick: () => void;
@@ -19,6 +37,22 @@ export function Header({ onUploadClick, onActualizeClick }: HeaderProps) {
   const { searchQuery, setSearchQuery } = useFilterStore();
   const { lastSyncedAt, isSyncing } = useSettingsStore();
   const filteredProducts = useFilteredProducts();
+
+  // Local state for immediate input response
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  // Sync debounced value to store
+  useEffect(() => {
+    setSearchQuery(debouncedSearch);
+  }, [debouncedSearch, setSearchQuery]);
+
+  // Sync store to local when cleared externally
+  useEffect(() => {
+    if (searchQuery === '' && localSearch !== '') {
+      setLocalSearch('');
+    }
+  }, [searchQuery]);
 
   const handleExport = () => {
     if (filteredProducts.length > 0) {
@@ -56,8 +90,8 @@ export function Header({ onUploadClick, onActualizeClick }: HeaderProps) {
           <div className="flex-1 max-w-md mx-4 hidden md:block">
             <SearchInput
               placeholder="Search by SKU, title, or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
             />
           </div>
 
@@ -148,8 +182,8 @@ export function Header({ onUploadClick, onActualizeClick }: HeaderProps) {
         <div className="mt-3 md:hidden">
           <SearchInput
             placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
           />
         </div>
       </div>
