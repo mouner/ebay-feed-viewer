@@ -63,6 +63,7 @@ const STOCK_COLUMN_MAPPINGS: Record<string, keyof StockFeedItem | 'stockStatus'>
   'sell_price': 'price',
   'wholesale_price': 'wholesalePrice',
   'Wholesale Price': 'wholesalePrice',
+  'WholeSale Price': 'wholesalePrice',
   'wholesalePrice': 'wholesalePrice',
   'cost': 'wholesalePrice',
   'Cost': 'wholesalePrice',

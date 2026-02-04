@@ -225,11 +225,11 @@ export function ProductTable({
                 {/* Price */}
                 <div className="w-24 flex-shrink-0 px-2 text-right">
                   <p className="font-medium text-gray-900 dark:text-white text-sm">
-                    £{product.price.toFixed(2)}
+                    £{(product.wholesalePrice > 0 ? product.wholesalePrice : product.price).toFixed(2)}
                   </p>
-                  {product.wholesalePrice > 0 && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Cost: £{product.wholesalePrice.toFixed(2)}
+                  {product.wholesalePrice > 0 && product.price > 0 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-through">
+                      £{product.price.toFixed(2)}
                     </p>
                   )}
                 </div>

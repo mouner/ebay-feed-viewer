@@ -51,16 +51,6 @@ export function PriceFilter() {
       {/* Price Type Toggle */}
       <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
         <button
-          onClick={() => setPriceType('retail')}
-          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            priceType === 'retail'
-              ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white'
-              : 'text-gray-500 dark:text-gray-400'
-          }`}
-        >
-          Retail
-        </button>
-        <button
           onClick={() => setPriceType('wholesale')}
           className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
             priceType === 'wholesale'
@@ -69,6 +59,16 @@ export function PriceFilter() {
           }`}
         >
           Wholesale
+        </button>
+        <button
+          onClick={() => setPriceType('retail')}
+          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
+            priceType === 'retail'
+              ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white'
+              : 'text-gray-500 dark:text-gray-400'
+          }`}
+        >
+          Retail
         </button>
       </div>
 

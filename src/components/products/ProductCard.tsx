@@ -156,11 +156,11 @@ export function ProductCard({
         {/* Price */}
         <div className="flex items-baseline gap-2">
           <span className="text-lg font-bold text-gray-900 dark:text-white">
-            £{product.price.toFixed(2)}
+            £{(product.wholesalePrice > 0 ? product.wholesalePrice : product.price).toFixed(2)}
           </span>
-          {product.wholesalePrice > 0 && (
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Cost: £{product.wholesalePrice.toFixed(2)}
+          {product.wholesalePrice > 0 && product.price > 0 && (
+            <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
+              £{product.price.toFixed(2)}
             </span>
           )}
         </div>
